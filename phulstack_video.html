@@ -33,8 +33,10 @@
             const video = document.getElementById('myVidPlayer');
             
             navigator.mediaDevices.getUserMedia({ 
-                video: true, 
-                audio: false 
+                audio: false,
+                video: {
+                    facingMode: 'environment'
+                } 
             }).then(stream => {
                 video.srcObject = stream;
             }).catch(console.error);
@@ -127,7 +129,7 @@
                     // g.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
                     // m.vertexColors = true;
                     // scene.add(gltf.scene);
-                    animate();
+                    setTimeout(animate, 3000);
                 });
             }
             // function possibleAnims(){
