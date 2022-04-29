@@ -1,0 +1,159 @@
+<html>
+    <head>
+        <title>PhulStack_Video</title>
+        <!--GOOGLE FONTS-->
+        <link href="https://fonts.googleapis.com/css?family=Lato:300,400|Staatliches&display=swap" rel="stylesheet">
+        <!--FONT-AWESOME-->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+        <!--CSS-->
+        <link rel="stylesheet" type="text/css" href="../static/style.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        
+    </head>
+    <body>
+       
+        <div class="mycanvas">
+            <canvas> </canvas>
+        </div>
+
+        <div class="scene" style="z-index: 1;"></div>
+        <video id="myVidPlayer" controls muted autoplay style="width: 100%; height: 100vh;"></video>
+        <script type="text/javascript">
+            var canvas = document.querySelector("canvas");
+            var context = canvas.getContext("2d");
+            // const video = document.querySelector('#myVidPlayer');
+        
+            //w-width,h-height
+            var w, h;
+            canvas.style.display = "none";
+        
+        
+
+            const video = document.getElementById('myVidPlayer');
+            
+            navigator.mediaDevices.getUserMedia({ 
+                video: true, 
+                audio: false 
+            }).then(stream => {
+                video.srcObject = stream;
+            }).catch(console.error);
+        
+        </script>
+
+        <!-- code for the model and three js -->
+        <script src="https://threejs.org/build/three.min.js"></script>
+        <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js"></script>
+        <script src="https://threejs.org/examples/js/loaders/DRACOLoader.js"></script>
+        <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+        <script>
+
+            //Variables for setup
+
+            let container;
+            let camera;
+            let renderer;
+            let scene;
+            let house;
+            let mixer;
+            let clips;
+            let currentlyAnimating = false;
+            let idle;
+            const clock = new THREE.Clock();
+            var raycaster = new THREE.Raycaster();
+            function init() {
+                container = document.querySelector(".scene");
+
+                //Create scene
+                scene = new THREE.Scene();
+
+                const fov = 35;
+                const aspect = container.clientWidth / container.clientHeight;
+                const near = 1;
+                const far = 10000;
+
+                //Camera setup
+                camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+                camera.position.set(0, 0, 1000);
+
+                const ambient = new THREE.AmbientLight(0x404040, 1);
+                scene.add(ambient);
+
+                const light = new THREE.DirectionalLight(0xffffff, 1);
+                light.position.set(50, 50, 100);
+                scene.add(light);
+
+                //Renderer
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(container.clientWidth, container.clientHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.outputEncoding = THREE.sRGBEncoding;
+                container.appendChild(renderer.domElement);
+
+                const controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.target.set(0, 0.5, 0);
+                controls.update();
+                controls.enablePan = false;
+                controls.enableDamping = true;
+
+                const dracoLoader = new THREE.DRACOLoader();
+                dracoLoader.setDecoderPath('https://threejs.org/examples/js/libs/draco/gltf/');
+                
+                //Load Model
+                let loader = new THREE.GLTFLoader();
+                loader.setDRACOLoader(dracoLoader);
+                loader.load("nametag3.glb", function (gltf) {
+                    scene.add(gltf.scene);
+                    house = gltf.scene.children[0];
+                    house.scale.set(0.7,0.7,0.7);
+                    house.position.z=250;
+                    house.position.x=20;
+                    house.position.y=50;
+                    house.rotation.y = 1.5607;
+                    console.log(house.position);
+                    // mixer = new THREE.AnimationMixer(house);
+                    // mixer.clipAction(gltf.animations[0]).play();
+                    // clips = gltf.animations;
+                    // let g = gltf.scene.children[0].geometry;
+                    // let m = gltf.scene.children[0].material;
+                    // let p = g.attributes.position;
+                    // let c = new THREE.Color();
+                    // let colors = [];
+                    // for(let i = 0; i < p.count; i++){
+                    //     c.set(Math.random() < 0.5 ? 0xff00ff : 0xffff00);
+                    //     colors.push(c.r, c.g, c.b);
+                    // }
+                    // g.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+                    // m.vertexColors = true;
+                    // scene.add(gltf.scene);
+                    animate();
+                });
+            }
+            // function possibleAnims(){
+            //     let clip = THREE.AnimationClip.findByName(clips, val.name);
+            //     clip = mixer.clipAction(clip);
+            //     return clip;
+            // }
+            function animate() {
+                requestAnimationFrame(animate);
+
+                // const delta = clock.getDelta();
+                // mixer.update(delta);
+                renderer.render(scene, camera);
+            }
+
+            init();
+
+            function onWindowResize() {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            }
+
+            window.addEventListener("resize", onWindowResize);
+            
+        </script>
+    </body>
+</html>
